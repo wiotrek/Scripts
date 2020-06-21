@@ -1,7 +1,20 @@
 #!/bin/bash
+
+#Skrypt najlepiej dziala jesli podajemy parametry bez sciezek
+#czyli w katalogu w ktorym jest skrypt rownolegle jest folder($3) a w ktorym sa [dwa foldery i dwa pliki]($4-$7)
+
 function syntaxNull()
 {
-	echo "wprowadz parametr"
+        echo "#####################################"
+	echo "Niepoprawna skladnia"
+        echo "1. Nazwa uzytkownika"
+        echo "2. Nazwa grupy"
+        echo "3. Nazwa lub sciezka do folder 1"
+        echo "4. Nazwa lub sciezka do pliku 1"
+        echo "5. Nazwa lub sciezka do folderu 2"
+        echo "6. Nazwa lub sciezka do pliku 2"
+        echo "7. Nazwa lub sciezka do folderu 3"
+        echo "#####################################"
 	exit 1
 }
 function syntaxExist()
@@ -9,6 +22,16 @@ function syntaxExist()
 	echo "Wprowadz poprawna nazwe"
 	exit 1	
 }
+ #sciezka do raportu
+sciezkaDoRaportu=$3/raport.txt
+
+#Sprawdza na poczatku czy jest wlasciwa ilosc parametrow, aby uninkac niepotrzebnego wykonywania
+       if [[ -z "$8" ]] ; then
+                echo "0. Prawidlowa ilosc parametrow" >> $sciezkaDoRaportu
+        else
+                echo "Zbyt duzo parametrow"
+                syntaxNull
+        fi
 
 #Sprawdz czy istnieje taki uzytkownik
        if [[ -z "$1" ]] ; then
@@ -22,8 +45,6 @@ function syntaxExist()
                         #tworzymy uzytkownika
                         sudo useradd $1
 
-                        #sciezka do raportu
-                        sciezkaDoRaportu=$3/raport.txt
                         echo "1. Dodalismy uzytkownika" >> $sciezkaDoRaportu
                 fi
         fi
@@ -41,6 +62,7 @@ function syntaxExist()
                         echo "2. Stworzylismy grupe oraz dodalismy uzytkownika do niej" >> $sciezkaDoRaportu
 		fi
         fi
+
 
 #Sprawdz czy istnieje taki folder
 	
@@ -177,4 +199,32 @@ else
         echo "Nie udalo sie przeniesc pliku $6"
         exit 1
 fi
+
+#Otwieramy vi w tle
+
+nohup vi &>/dev/null &
+#nohup przytrzymuje proces aby mogl trwac w tle
+#niestety po sprawdzaniu kilka razy komenda ps
+#proces i tak sam ginie
+if [ $? == 0 ] ; then
+        echo "11. Udalo sie uruchomic edytor vi w tle" >> raport.txt
+else
+        echo "Nie udalo sie uruchmoic edytora vi w tle"
+        exit 1
+fi
+#zabijamy nasz proces
+kill -SIGKILL $(pidof vi)
+
+if [ $? == 0 ] ; then
+        echo "12. Udalo sie zabic proces" >> raport.txt
+else
+        echo "12. Nie udalo sie zabic procesu, jednak jest to koncowka skryptu dlatego" >> raport.txt
+        echo "nie zostanie zatrzymany. Prawie sie udalo" >> raport.txt
+fi
+
+echo "Jesli jest 12 krokow, to wszystko poszlo tak jak zakladalem" >> raport.txt
+echo "Gratuluje !!" >> raport.txt
+exit 0
+
+
 
